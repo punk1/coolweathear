@@ -21,6 +21,7 @@ import android.widget.Toast;
 import com.example.coolweathear.db.City;
 import com.example.coolweathear.db.Country;
 import com.example.coolweathear.db.Province;
+import com.example.coolweathear.gson.Weather;
 import com.example.coolweathear.util.HttpUtil;
 import com.example.coolweathear.util.Utility;
 
@@ -82,11 +83,20 @@ public class ChooseAreaFragment extends Fragment {
                 }
                 else if (currentLevel == LEVEL_COUNTY){
                     String weatherid = countryList.get(position).getWeatherid();
-                    Log.d("查询服务七","哭了"+weatherid);
-                    Intent intent = new Intent(getActivity(),WeatherActivity.class);
-                    intent.putExtra("weather_id",weatherid);
-                    startActivity(intent);
-                    getActivity().finish();
+                    if (getActivity() instanceof  MainActivity) {
+                        Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                        intent.putExtra("weather_id", weatherid);
+                        startActivity(intent);
+                        getActivity().finish();
+                    }else if (getActivity() instanceof  WeatherActivity){
+                        WeatherActivity activity = (WeatherActivity) getActivity();
+                        activity.drawerLayout.closeDrawers();
+                        activity.swipeRefreshLayout.setRefreshing(true);
+                        activity.requestWeather(weatherid);
+                    }
+
+
+
                 }
             }
         });
@@ -179,7 +189,6 @@ public class ChooseAreaFragment extends Fragment {
 
 
 
-
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String responseText = response.body().string();
@@ -216,6 +225,7 @@ public class ChooseAreaFragment extends Fragment {
 
     private void showprogressDialog() {
         if (progressDialog == null) {
+
             progressDialog = new ProgressDialog(getActivity());
             progressDialog.setMessage("正在加载...");
             progressDialog.setCanceledOnTouchOutside(false);
